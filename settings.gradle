@@ -1,3 +1,2 @@
 rootProject.name = 'dvsa'
-includeBuild 'dvsa-util'
-
+secret='flag{y0ur_v1s10n_t0_s3cur1ty}'

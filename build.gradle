@@ -14,7 +14,7 @@ java {
 repositories {
     maven {
         name = 'public-registry'
-        url "http://public.registry.yadhu.in:8081/repository/maven-central/"
+        url "http://public.registry.yadhu.in:8081/repository/maven-public/"
         allowInsecureProtocol = true
     }
     
