@@ -1,0 +1,66 @@
+name: DVSA Code Quality Checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  quality-checks:
+    runs-on: self-hosted
+    environment: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Checkstyle
+        run: |
+          CHECKSTYLE_VERSION="10.12.5"
+          wget -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-${CHECKSTYLE_VERSION}/checkstyle-${CHECKSTYLE_VERSION}-all.jar -O checkstyle.jar
+          echo "CHECKSTYLE_JAR=$(pwd)/checkstyle.jar" >> $GITHUB_ENV
+          
+          # Create basic checkstyle config
+          mkdir -p config
+          cat > config/checkstyle.xml << 'EOF'
+          <?xml version="1.0"?>
+          <!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+          <module name="Checker">
+            <module name="TreeWalker">
+              <module name="AvoidStarImport"/>
+              <module name="ConstantName"/>
+              <module name="LocalVariableName"/>
+            </module>
+          </module>
+          EOF
+
+      - name: Run Checkstyle
+        run: |
+          # Get branch name: use head_ref for PRs, ref_name for pushes
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+          
+          # Sanitize branch name for file paths (replace / with -)
+          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '/' '-')
+          
+          # Run Checkstyle and write XML report
+          mkdir -p reports
+          REPORT_FILE="reports/checkstyle-${SAFE_BRANCH_NAME}.xml"
+
+          java -jar ${{ env.CHECKSTYLE_JAR }} -c config/checkstyle.xml -f xml -o "$REPORT_FILE" src/ || true
+          
+          POST_SCRIPT="/tmp/post-process-${BRANCH_NAME}.sh"
+          echo "#!/bin/bash" > "$POST_SCRIPT"
+          echo "echo 'Post-processing checkstyle results for branch: ${BRANCH_NAME}'" >> "$POST_SCRIPT"
+          echo "if [ -f '$REPORT_FILE' ]; then" >> "$POST_SCRIPT"
+          echo "  echo 'Checkstyle report generated successfully'" >> "$POST_SCRIPT"
+          echo "  cat '$REPORT_FILE' | head -20" >> "$POST_SCRIPT"
+          echo "fi" >> "$POST_SCRIPT"
+          chmod +x "$POST_SCRIPT"
+          bash "$POST_SCRIPT"

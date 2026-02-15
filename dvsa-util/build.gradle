@@ -1,0 +1,38 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'in.yadhu.util'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId = group
+            artifactId = 'util'
+            version = version
+        }
+    }
+    repositories {
+        maven {
+            name = 'private-nexus'
+            def baseUrl = 'http://private.registry.yadhu.in:8082'
+            url = "${baseUrl}/repository/maven-snapshots/"
+            allowInsecureProtocol = true
+            credentials {
+                username = project.findProperty('nexusUsername') ?: System.getenv('NEXUS_USERNAME') ?: 'admin'
+                password = project.findProperty('nexusPassword') ?: System.getenv('NEXUS_PASSWORD') ?: 'Private@123'
+            }
+        }
+    }
+}

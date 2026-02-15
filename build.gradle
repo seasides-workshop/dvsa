@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.5'
+}
+
+group = 'in.yadhu.dvsa'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    maven {
+        name = 'public-registry'
+        url "http://public.registry.yadhu.in:8081/repository/maven-central/"
+        allowInsecureProtocol = true
+    }
+    
+    maven {
+        name = 'private-registry'
+        url "http://private.registry.yadhu.in:8082/repository/maven-snapshots/"
+        allowInsecureProtocol = true
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.apache.commons:commons-lang3:3.15.0'
+    implementation 'in.yadhu.util:util:0.0.1-SNAPSHOT'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
