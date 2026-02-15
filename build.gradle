@@ -12,6 +12,8 @@ java {
 }
 
 repositories {
+    mavenCentral()
+
     maven {
         name = 'public-registry'
         url "http://public.registry.yadhu.in:8081/repository/maven-public/"
