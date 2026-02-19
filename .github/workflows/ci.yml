@@ -3,7 +3,7 @@ name: DVSA Code Quality Checks
 on:
   push:
     branches:
-      - TEST1
+      - main
   pull_request_target:
     types: [opened, synchronize, reopened]
 
